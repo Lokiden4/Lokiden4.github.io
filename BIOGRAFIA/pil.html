@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Almacén Pil Oruro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h2 {
+            color: #333;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+        input[type="submit"] {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #218838;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Registro de Entrada</h2>
+<form id="entradaForm">
+    <label for="productoEntrada">Producto</label>
+    <input type="text" id="productoEntrada" name="productoEntrada" required>
+
+    <label for="cantidadEntrada">Cantidad</label>
+    <input type="number" id="cantidadEntrada" name="cantidadEntrada" required>
+
+    <input type="submit" value="Registrar Entrada">
+</form>
+
+<h2>Registro de Salida</h2>
+<form id="salidaForm">
+    <label for="productoSalida">Producto</label>
+    <input type="text" id="productoSalida" name="productoSalida" required>
+
+    <label for="cantidadSalida">Cantidad</label>
+    <input type="number" id="cantidadSalida" name="cantidadSalida" required>
+
+    <input type="submit" value="Registrar Salida">
+</form>
+
+<h2>Inventario</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+        </tr>
+    </thead>
+    <tbody id="inventarioTabla">
+        <!-- Aquí se añadirán las filas del inventario -->
+    </tbody>
+</table>
+
+<script>
+    document.getElementById('entradaForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const producto = document.getElementById('productoEntrada').value;
+        const cantidad = parseInt(document.getElementById('cantidadEntrada').value);
+        registrarEntrada(producto, cantidad);
+    });
+
+    document.getElementById('salidaForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const producto = document.getElementById('productoSalida').value;
+        const cantidad = parseInt(document.getElementById('cantidadSalida').value);
+        registrarSalida(producto, cantidad);
+    });
+
+    function actualizarTabla(inventario) {
+        const tabla = document.getElementById('inventarioTabla');
+        tabla.innerHTML = '';
+        for (const item of inventario) {
+            const fila = document.createElement('tr');
+            fila.innerHTML = `<td>${item.producto}</td><td>${item.cantidad}</td>`;
+            tabla.appendChild(fila);
+        }
+    }
+
+    function registrarEntrada(producto, cantidad) {
+        fetch('/entrada', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ producto, cantidad }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            actualizarTabla(data.inventario);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    }
+
+    function registrarSalida(producto, cantidad) {
+        fetch('/salida', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ producto, cantidad }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            actualizarTabla(data.inventario);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    }
+
+    // Cargar inventario al cargar la página
+    fetch('/inventario')
+    .then(response => response.json())
+    .then(data => {
+        actualizarTabla(data.inventario);
+    });
+</script>
+
+</body>
+</html>
